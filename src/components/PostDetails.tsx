@@ -22,6 +22,7 @@ export const PostDetails: React.FC<Props> = ({
 
   useEffect(() => {
     setLoading(true);
+    setError('');
     client
       .get<Comment[]>('/comments?postId=' + currentPost.id)
       .then(setComments)
@@ -30,7 +31,7 @@ export const PostDetails: React.FC<Props> = ({
   }, [currentPost]);
 
   if (!currentPost) {
-    return;
+    return null;
   }
 
   function deleteComment(commentId: number) {

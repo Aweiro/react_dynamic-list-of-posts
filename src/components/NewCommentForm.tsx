@@ -1,4 +1,6 @@
 import React, { FormEvent, useState } from 'react';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import PropTypes from 'prop-types';
 import { client } from '../utils/fetchClient';
 import { Comment } from '../types/Comment';
 import classNames from 'classnames';
@@ -208,4 +210,14 @@ export const NewCommentForm: React.FC<Props> = ({
       </div>
     </form>
   );
+};
+
+NewCommentForm.propTypes = {
+  currentPost: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    userId: PropTypes.number.isRequired,
+  }).isRequired,
+  onComments: PropTypes.func.isRequired,
 };

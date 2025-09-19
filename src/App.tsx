@@ -4,12 +4,12 @@ import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import './App.scss';
 
+import { client } from './utils/fetchClient';
 import { PostsList } from './components/PostsList';
 import { PostDetails } from './components/PostDetails';
 import { UserSelector } from './components/UserSelector';
 import { Loader } from './components/Loader';
 import { useEffect, useState } from 'react';
-import { client } from './utils/fetchClient';
 import { Post } from './types/Post';
 import { User } from './types/User';
 
