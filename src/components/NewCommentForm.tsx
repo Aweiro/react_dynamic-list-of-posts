@@ -1,8 +1,75 @@
-import React from 'react';
+import React, { FormEvent, useState } from 'react';
+import { client } from '../utils/fetchClient';
+import { Comment } from '../types/Comment';
+import classNames from 'classnames';
+import { Post } from '../types/Post';
 
-export const NewCommentForm: React.FC = () => {
+interface Props {
+  currentPost: Post;
+  onComments: React.Dispatch<React.SetStateAction<Comment[]>>;
+}
+
+export const NewCommentForm: React.FC<Props> = ({
+  onComments,
+  currentPost,
+}) => {
+  const [queryName, setQueryName] = useState('');
+  const [queryEmail, setQueryEmail] = useState('');
+  const [queryText, setQueryText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const clearErrors = {
+    name: '',
+    email: '',
+    text: '',
+  };
+  const [errors, setErrors] = useState(clearErrors);
+
+  function addComment({ postId, name, email, body }: Omit<Comment, 'id'>) {
+    return client
+      .post<Comment>('/comments', { postId, name, email, body })
+      .then(newComment => {
+        onComments(currentComments => [...currentComments, newComment]);
+      });
+  }
+
+  const handleSubmit = (e: FormEvent<HTMLElement>) => {
+    e.preventDefault();
+    const trimmedValues = {
+      name: queryName.trim(),
+      email: queryEmail.trim(),
+      text: queryText.trim(),
+    };
+
+    if (!trimmedValues.name) {
+      setErrors(prev => ({ ...prev, name: 'Name is required' }));
+    }
+
+    if (!trimmedValues.email) {
+      setErrors(prev => ({ ...prev, email: 'Email is required' }));
+    }
+
+    if (!trimmedValues.text) {
+      setErrors(prev => ({ ...prev, text: 'Enter some text' }));
+    }
+
+    if (!trimmedValues.text || !trimmedValues.email || !trimmedValues.name) {
+      return;
+    }
+
+    setLoading(true);
+
+    addComment({
+      postId: currentPost.id,
+      name: trimmedValues.name,
+      email: trimmedValues.email,
+      body: trimmedValues.text,
+    })
+      .then(() => setQueryText(''))
+      .finally(() => setLoading(false));
+  };
+
   return (
-    <form data-cy="NewCommentForm">
+    <form data-cy="NewCommentForm" onSubmit={handleSubmit}>
       <div className="field" data-cy="NameField">
         <label className="label" htmlFor="comment-author-name">
           Author Name
@@ -14,24 +81,36 @@ export const NewCommentForm: React.FC = () => {
             name="name"
             id="comment-author-name"
             placeholder="Name Surname"
-            className="input is-danger"
+            className={classNames('input', { 'is-danger': errors.name })}
+            value={queryName}
+            onChange={e => {
+              setQueryName(e.target.value);
+
+              if (errors.name) {
+                setErrors(prev => ({ ...prev, name: '' }));
+              }
+            }}
           />
 
           <span className="icon is-small is-left">
             <i className="fas fa-user" />
           </span>
 
-          <span
-            className="icon is-small is-right has-text-danger"
-            data-cy="ErrorIcon"
-          >
-            <i className="fas fa-exclamation-triangle" />
-          </span>
+          {errors.name && (
+            <span
+              className="icon is-small is-right has-text-danger"
+              data-cy="ErrorIcon"
+            >
+              <i className="fas fa-exclamation-triangle" />
+            </span>
+          )}
         </div>
 
-        <p className="help is-danger" data-cy="ErrorMessage">
-          Name is required
-        </p>
+        {errors.name && (
+          <p className="help is-danger" data-cy="ErrorMessage">
+            {errors.name}
+          </p>
+        )}
       </div>
 
       <div className="field" data-cy="EmailField">
@@ -45,24 +124,36 @@ export const NewCommentForm: React.FC = () => {
             name="email"
             id="comment-author-email"
             placeholder="email@test.com"
-            className="input is-danger"
+            className={classNames('input', { 'is-danger': errors.email })}
+            value={queryEmail}
+            onChange={e => {
+              setQueryEmail(e.target.value);
+
+              if (errors.email) {
+                setErrors(prev => ({ ...prev, email: '' }));
+              }
+            }}
           />
 
           <span className="icon is-small is-left">
             <i className="fas fa-envelope" />
           </span>
 
-          <span
-            className="icon is-small is-right has-text-danger"
-            data-cy="ErrorIcon"
-          >
-            <i className="fas fa-exclamation-triangle" />
-          </span>
+          {errors.email && (
+            <span
+              className="icon is-small is-right has-text-danger"
+              data-cy="ErrorIcon"
+            >
+              <i className="fas fa-exclamation-triangle" />
+            </span>
+          )}
         </div>
 
-        <p className="help is-danger" data-cy="ErrorMessage">
-          Email is required
-        </p>
+        {errors.email && (
+          <p className="help is-danger" data-cy="ErrorMessage">
+            {errors.email}
+          </p>
+        )}
       </div>
 
       <div className="field" data-cy="BodyField">
@@ -75,25 +166,47 @@ export const NewCommentForm: React.FC = () => {
             id="comment-body"
             name="body"
             placeholder="Type comment here"
-            className="textarea is-danger"
+            className={classNames('textarea', { 'is-danger': errors.text })}
+            value={queryText}
+            onChange={e => {
+              setQueryText(e.target.value);
+
+              if (errors.text) {
+                setErrors(prev => ({ ...prev, text: '' }));
+              }
+            }}
           />
         </div>
 
-        <p className="help is-danger" data-cy="ErrorMessage">
-          Enter some text
-        </p>
+        {errors.text && (
+          <p className="help is-danger" data-cy="ErrorMessage">
+            {errors.text}
+          </p>
+        )}
       </div>
 
       <div className="field is-grouped">
         <div className="control">
-          <button type="submit" className="button is-link is-loading">
+          <button
+            type="submit"
+            className={classNames('button is-link', { 'is-loading': loading })}
+          >
             Add
           </button>
         </div>
 
         <div className="control">
           {/* eslint-disable-next-line react/button-has-type */}
-          <button type="reset" className="button is-link is-light">
+          <button
+            type="reset"
+            className="button is-link is-light"
+            onClick={() => {
+              setQueryName('');
+              setQueryEmail('');
+              setQueryText('');
+              setErrors(clearErrors);
+            }}
+          >
             Clear
           </button>
         </div>
