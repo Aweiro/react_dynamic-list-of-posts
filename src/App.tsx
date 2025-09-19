@@ -23,6 +23,7 @@ export const App = () => {
 
   useEffect(() => {
     if (selectedUser) {
+      setError('');
       setLoading(true);
       client
         .get<Post[]>('/posts?userId=' + selectedUser?.id)

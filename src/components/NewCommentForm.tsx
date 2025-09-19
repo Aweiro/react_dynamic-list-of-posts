@@ -40,17 +40,12 @@ export const NewCommentForm: React.FC<Props> = ({
       text: queryText.trim(),
     };
 
-    if (!trimmedValues.name) {
-      setErrors(prev => ({ ...prev, name: 'Name is required' }));
-    }
-
-    if (!trimmedValues.email) {
-      setErrors(prev => ({ ...prev, email: 'Email is required' }));
-    }
-
-    if (!trimmedValues.text) {
-      setErrors(prev => ({ ...prev, text: 'Enter some text' }));
-    }
+    setErrors(prev => ({
+      ...prev,
+      name: !trimmedValues.name ? 'Name is required' : '',
+      email: !trimmedValues.email ? 'Email is required' : '',
+      text: !trimmedValues.text ? 'Enter some text' : '',
+    }));
 
     if (!trimmedValues.text || !trimmedValues.email || !trimmedValues.name) {
       return;
